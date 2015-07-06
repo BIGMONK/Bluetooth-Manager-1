@@ -4,3 +4,5 @@ build/
 .classpath
 .project
 .gitignore
+/nbproject/
+/nbbuild/

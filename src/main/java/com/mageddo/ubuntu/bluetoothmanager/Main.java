@@ -31,6 +31,8 @@ public final class Main extends JFrame{
 	private static final String EMAIL_SUPORTE = "edigitalb@gmail.com";	
 
 	private JButton buttonEnable;
+	private JButton buttonShowIcon;
+	private JButton buttonHiddeIcon;
 	private JButton buttonDisable;
 	private JButton buttonAbout;
 	private BoxErro boxErro;
@@ -62,15 +64,15 @@ public final class Main extends JFrame{
 	 * Instancia as variáveis padrão
 	 */
 	private void initializeVariables() {
-		buttonAbout = new JButton("Sobre...");
-		buttonEnable = new JButton("Ligar");
-		buttonDisable = new JButton("Desligar");
+		buttonAbout = new JButton("About...");
+		buttonEnable = new JButton("Active");
+		buttonDisable = new JButton("Desactive");
 		
 	}
 
 	private void run() {
 		setLayout(new GridLayout());
-		setTitle("Bluetooth Manager - Mageddo");
+		setTitle("Bluetooth Manager 0.0.2 - Mageddo");
 		add(buttonEnable);
 		add(buttonDisable);
 		add(buttonAbout);
@@ -81,8 +83,7 @@ public final class Main extends JFrame{
 		buttonAbout.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(Main.this, String.format("Copyright 2014 - Mageddo \nContato: %s\nwww.mageddo.com", EMAIL_SUPORTE));
-				
+				JOptionPane.showMessageDialog(Main.this, String.format("Copyright 2014 - Mageddo \nContact: %s\nwww.mageddo.com", EMAIL_SUPORTE));
 			}
 		});
 		
@@ -98,11 +99,13 @@ public final class Main extends JFrame{
 //				TODO EFS chama o cmd e salva um arquivo com a mensagem passada
 				if(
 					command("bash", "-c", "rfkill unblock bluetooth")
-					&&
-					command("bash", "-c", "gsettings set com.canonical.indicator.bluetooth visible true")
 				){
 					buttonEnable.setEnabled(false);
 					buttonDisable.setEnabled(true);
+					try{
+						// trying to hide icon
+						command(false,"bash", "-c", "gsettings set com.canonical.indicator.bluetooth visible true");
+					}catch(Exception ex){};
 				}				
 			}
 		});
@@ -116,10 +119,12 @@ public final class Main extends JFrame{
 //				TODO EFS chama o cmd e salva um arquivo com a mensagem passada
 				if(
 					command("bash", "-c", "rfkill block bluetooth")
-					&&
-					command("bash", "-c", "gsettings set com.canonical.indicator.bluetooth visible false")
 				){
 
+					try{
+						// trying to hide icon
+						command(false,"bash", "-c", "gsettings set com.canonical.indicator.bluetooth visible false");
+					}catch(Exception ex){};
 					buttonDisable.setEnabled(false);
 					buttonEnable.setEnabled(true);
 				}
@@ -136,6 +141,10 @@ public final class Main extends JFrame{
 	 * @return
 	 */
 	private boolean command(String ... command) {
+		return command(true, command);
+	}
+	
+	private boolean command(boolean catchError, String ... command) {
 		try {
 //			TODO EFS EXAMPLE
 //			Process pc = new ProcessBuilder("cmd", "/c","echo logs.log > d:/logs.log").start();
@@ -147,7 +156,8 @@ public final class Main extends JFrame{
 
 			return true;
 		} catch (IOException e1) {
-			erro("Não foi possível desativar o bluetooth", e1);
+			if(catchError)
+				erro("Não foi possível desativar o bluetooth", e1);
 			return false;
 		}
 	}
